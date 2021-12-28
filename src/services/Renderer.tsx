@@ -61,15 +61,10 @@ export class Renderer {
     onDelete: (item: IListItem) => void,
     onReorder: (detail: ItemReorderEventDetail) => void
   ) => {
-    const completedElements: JSX.Element[] = [];
-    const activeElements: JSX.Element[] = [];
+    const elements: JSX.Element[] = [];
 
     for (const item of items) {
-      if (item.isComplete) {
-        completedElements.push(Renderer.RenderItem(item, onEdit, onDelete));
-      } else {
-        activeElements.push(Renderer.RenderItem(item, onEdit, onDelete));
-      }
+      elements.push(Renderer.RenderItem(item, onEdit, onDelete));
     }
 
     const emptyLine: JSX.Element = (
@@ -90,24 +85,8 @@ export class Renderer {
 
     const allElements: JSX.Element[] = [];
     allElements.push(
-      <IonReorderGroup
-        onIonItemReorder={(event: CustomEvent<ItemReorderEventDetail>) => onReorder(event.detail)}
-        disabled={false}
-        key="reorder_component_completed">
-        {completedElements}
-      </IonReorderGroup>
-    );
-    allElements.push(
-      <IonReorderGroup
-        onIonItemReorder={(event: CustomEvent<ItemReorderEventDetail>) => {
-          if (event.detail.from + completedElements.length > items.length || event.detail.to + completedElements.length > items.length) {
-            throw Error("Out of range!");
-          }
-          onReorder({ ...event.detail, from: event.detail.from + completedElements.length, to: event.detail.to + completedElements.length });
-        }}
-        disabled={false}
-        key="reorder_component_active">
-        {activeElements}
+      <IonReorderGroup onIonItemReorder={(event: CustomEvent<ItemReorderEventDetail>) => onReorder(event.detail)} disabled={false} key="reorder_component">
+        {elements}
       </IonReorderGroup>
     );
 
