@@ -69,10 +69,9 @@ export class Renderer {
     }
 
     const emptyLine: JSX.Element = (
-      <IonRow className="row-line">
+      <IonRow className="row-line" key={Date.now()}>
         <IonCol>
           <IonInput
-            key={Date.now()}
             onBlur={(ev: any) => onAdd(ev.target.value)}
             onKeyPress={(event: React.KeyboardEvent<HTMLIonInputElement>) => {
               if (!event.ctrlKey && !event.altKey && !event.shiftKey && event.key === "Enter") {
