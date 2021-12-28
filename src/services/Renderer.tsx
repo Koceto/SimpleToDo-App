@@ -1,7 +1,6 @@
 import { ItemReorderEventDetail } from "@ionic/core";
-import { IonButton, IonCol, IonGrid, IonIcon, IonInput, IonItem, IonReorder, IonReorderGroup, IonRow } from "@ionic/react";
+import { IonCol, IonGrid, IonIcon, IonInput, IonItem, IonReorder, IonReorderGroup, IonRow } from "@ionic/react";
 import { closeOutline } from "ionicons/icons";
-import { networkInterfaces } from "os";
 import { IListItem } from "../interfaces/IListItem";
 
 export class Renderer {
@@ -77,7 +76,6 @@ export class Renderer {
               if (!event.ctrlKey && !event.altKey && !event.shiftKey && event.key === "Enter") {
                 const target: any = event.target;
                 target.blur();
-                target.value = "";
               }
             }}
           />
