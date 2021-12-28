@@ -1,6 +1,7 @@
 import { ItemReorderEventDetail } from "@ionic/core";
-import { IonCol, IonGrid, IonIcon, IonInput, IonItem, IonReorder, IonReorderGroup, IonRow } from "@ionic/react";
+import { IonButton, IonCol, IonGrid, IonIcon, IonInput, IonItem, IonReorder, IonReorderGroup, IonRow } from "@ionic/react";
 import { closeOutline } from "ionicons/icons";
+import { networkInterfaces } from "os";
 import { IListItem } from "../interfaces/IListItem";
 
 export class Renderer {
@@ -30,6 +31,30 @@ export class Renderer {
     return elements;
   };
 
+  private static RenderItem = (item: IListItem, onEdit: (item: IListItem, newItem: IListItem) => void, onDelete: (item: IListItem) => void): JSX.Element => {
+    return (
+      <IonItem key={item.key} style={{ "--highlight-color-focused": "none" }}>
+        <IonReorder />
+        <IonGrid className="ion-no-padding">
+          <IonRow>
+            <IonCol className="vertical-align ion-padding-horizontal">
+              <IonInput
+                value={item.value}
+                onBlur={(ev: any) => onEdit(item, { ...item, value: ev.target.value })}
+                style={{ cursor: "pointer", textDecoration: item.isComplete ? "line-through" : "none" }}
+              />
+            </IonCol>
+            <IonItem lines="none">
+              <IonCol size="auto" className="vertical-align">
+                <IonIcon icon={closeOutline} size="large" className="ion-color ion-color-danger" onClick={() => onDelete(item)} style={{ cursor: "pointer" }} />
+              </IonCol>
+            </IonItem>
+          </IonRow>
+        </IonGrid>
+      </IonItem>
+    );
+  };
+
   public static RenderEditItems = (
     items: IListItem[],
     onAdd: (value: string) => void,
@@ -39,62 +64,37 @@ export class Renderer {
   ) => {
     const elements: JSX.Element[] = [];
 
-    if (items) {
-      for (const item of items) {
-        elements.push(
-          <IonItem key={item.key}>
-            <IonReorder slot="start" title="kur" key="kur1" />
-            <IonGrid>
-              <IonRow>
-                <IonCol>
-                  <IonInput
-                    value={item.value}
-                    onBlur={(ev: any) => onEdit(item, { ...item, value: ev.target.value })}
-                    style={{ cursor: "pointer", textDecoration: item.isComplete ? "line-through" : "none" }}
-                  />
-                </IonCol>
-                <IonCol size="auto">
-                  <IonIcon
-                    icon={closeOutline}
-                    size="large"
-                    className="ion-float-right ion-color ion-color-danger"
-                    onClick={() => onDelete(item)}
-                    style={{ cursor: "pointer" }}
-                  />
-                </IonCol>
-              </IonRow>
-            </IonGrid>
-          </IonItem>
-        );
-      }
+    for (const item of items) {
+      elements.push(Renderer.RenderItem(item, onEdit, onDelete));
     }
 
-    elements.push(
-      <IonItem key={Date.now().toString()}>
-        <IonGrid>
-          <IonRow>
-            <IonCol>
-              <IonInput
-                autofocus
-                onBlur={(ev: any) => onAdd(ev.target.value)}
-                onKeyPress={(event: React.KeyboardEvent<HTMLIonInputElement>) => {
-                  if (!event.ctrlKey && !event.altKey && !event.shiftKey && event.key === "Enter") {
-                    const target: any = event.target;
-                    target.blur();
-                    target.value = "";
-                  }
-                }}
-              />
-            </IonCol>
-          </IonRow>
-        </IonGrid>
-      </IonItem>
+    const emptyLine: JSX.Element = (
+      <IonRow className="row-line">
+        <IonCol>
+          <IonInput
+            key={Date.now()}
+            onBlur={(ev: any) => onAdd(ev.target.value)}
+            onKeyPress={(event: React.KeyboardEvent<HTMLIonInputElement>) => {
+              if (!event.ctrlKey && !event.altKey && !event.shiftKey && event.key === "Enter") {
+                const target: any = event.target;
+                target.blur();
+                target.value = "";
+              }
+            }}
+          />
+        </IonCol>
+      </IonRow>
     );
 
-    return (
+    const allElements: JSX.Element[] = [];
+    allElements.push(
       <IonReorderGroup onIonItemReorder={(event: CustomEvent<ItemReorderEventDetail>) => onReorder(event.detail)} disabled={false} key="reorder_component">
         {elements}
       </IonReorderGroup>
     );
+
+    allElements.push(emptyLine);
+
+    return allElements;
   };
 }

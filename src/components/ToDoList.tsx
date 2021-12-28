@@ -79,7 +79,7 @@ export const ToDoList: React.FC<IToDoListProps> = (props: IToDoListProps): JSX.E
       } else {
         throw Error("None or many items in reorder!");
       }
-      saveToStorage(list);
+      saveToStorage(list, true);
       detail.complete(true);
     },
     [list, saveToStorage]
