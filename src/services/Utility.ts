@@ -5,9 +5,9 @@ export class Utility {
     if (a.isComplete && b.isComplete) {
       return 0;
     } else if (a.isComplete) {
-      return -1;
-    } else {
       return 1;
+    } else {
+      return -1;
     }
   };
 }
