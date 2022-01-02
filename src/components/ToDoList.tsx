@@ -112,6 +112,15 @@ export const ToDoList: React.FC<IToDoListProps> = (props: IToDoListProps): JSX.E
   useEffect(() => {
     const store = new Storage();
     store.create().then((val) => setStorage({ storage: val, isLoaded: true }));
+
+    document.addEventListener("ionBackButton", (ev: any) => {
+      ev.detail.register(-1, () => {
+        if (mode === Modes.Edit) {
+          toggleMode();
+        }
+      });
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
