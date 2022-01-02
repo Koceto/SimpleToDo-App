@@ -75,7 +75,9 @@ export class Renderer {
             onKeyPress={(event: React.KeyboardEvent<HTMLIonInputElement>) => {
               if (!event.ctrlKey && !event.altKey && !event.shiftKey && event.key === "Enter") {
                 const target: any = event.target;
-                target.blur();
+                if (target) {
+                  target.blur();
+                }
               }
             }}
             placeholder="Enter text..."
