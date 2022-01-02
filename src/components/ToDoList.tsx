@@ -115,12 +115,10 @@ export const ToDoList: React.FC<IToDoListProps> = (props: IToDoListProps): JSX.E
 
     document.addEventListener("ionBackButton", (ev: any) => {
       ev.detail.register(-1, () => {
-        if (mode === Modes.Edit) {
-          toggleMode();
-        }
+        setMode(Modes.View);
       });
     });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

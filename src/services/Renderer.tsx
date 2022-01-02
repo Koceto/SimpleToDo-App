@@ -78,6 +78,7 @@ export class Renderer {
                 target.blur();
               }
             }}
+            placeholder="Enter text..."
           />
         </IonCol>
       </IonRow>
