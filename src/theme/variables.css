@@ -246,3 +246,8 @@ http://ionicframework.com/docs/theming/ */
   flex-direction: column;
   justify-content: space-evenly;
 }
+
+div[class*="alert-input-group"] {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}

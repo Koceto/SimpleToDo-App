@@ -79,6 +79,9 @@ export class Renderer {
               }
             }}
             placeholder="Enter text..."
+            autofocus
+            autocapitalize="sentence"
+            autoCapitalize="sentence"
           />
         </IonCol>
       </IonRow>

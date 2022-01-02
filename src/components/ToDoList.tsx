@@ -3,8 +3,8 @@ import { useState, useMemo, useEffect, useCallback } from "react";
 
 // https://github.com/ionic-team/ionic-storage
 import { Storage } from "@ionic/storage";
-import { IonButton, IonContent, IonHeader, IonIcon, IonLabel, IonList, IonPage, IonTitle, IonToolbar } from "@ionic/react";
-import { pencil } from "ionicons/icons";
+import { IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonInput, IonLabel, IonList, IonPage, IonTitle, IonToolbar, useIonAlert } from "@ionic/react";
+import { pencil, addCircle } from "ionicons/icons";
 
 import { IToDoListProps } from "./IToDoListProps";
 import { Renderer } from "../services/Renderer";
@@ -17,6 +17,7 @@ export const ToDoList: React.FC<IToDoListProps> = (props: IToDoListProps): JSX.E
   const [storage, setStorage] = useState<{ storage: Storage | null; isLoaded: boolean }>({ storage: null, isLoaded: false });
   const [mode, setMode] = useState<Modes>(Modes.View);
   const [list, setList] = useState<IListItem[]>([]);
+  const [alert] = useIonAlert();
 
   const saveToStorage = useCallback(
     (items: IListItem[], forceRefresh: boolean = false) => {
@@ -33,7 +34,7 @@ export const ToDoList: React.FC<IToDoListProps> = (props: IToDoListProps): JSX.E
     [storage]
   );
 
-  const onCreate = useCallback(
+  const addItem = useCallback(
     (val: string | null | undefined) => {
       if (val) {
         const newItem: IListItem = { value: val, key: Date.now().toString() };
@@ -42,6 +43,29 @@ export const ToDoList: React.FC<IToDoListProps> = (props: IToDoListProps): JSX.E
     },
     [list, saveToStorage]
   );
+
+  const onAdd = useCallback(() => {
+    alert({
+      onDidPresent: () => {
+        setTimeout(() => {
+          const firstInput: any = document.querySelector("ion-alert input");
+
+          if (firstInput) {
+            firstInput.focus();
+          }
+        }, 150);
+      },
+      inputs: [
+        {
+          placeholder: "Enter text...",
+          type: "text",
+          cssClass: ["no-padding-vertical"],
+          attributes: { autocapitalize: true, autofocus: true, autoCapitalize: true, autoFocus: true },
+        },
+      ],
+      buttons: ["Cancel", { text: "Add", handler: (values: string[]) => addItem(values[0]) }],
+    });
+  }, [alert, addItem]);
 
   const onEdit = useCallback(
     (item: IListItem, newItem?: IListItem) => {
@@ -93,11 +117,11 @@ export const ToDoList: React.FC<IToDoListProps> = (props: IToDoListProps): JSX.E
     if (mode === Modes.View) {
       return Renderer.RenderViewItems(list, onEdit);
     } else if (mode === Modes.Edit) {
-      return Renderer.RenderEditItems(list, onCreate, onEdit, onDelete, onReorder);
+      return Renderer.RenderEditItems(list, addItem, onEdit, onDelete, onReorder);
     } else {
       return ["Error occurred while rendering!"];
     }
-  }, [mode, list, onCreate, onEdit, onDelete, onReorder]);
+  }, [mode, list, addItem, onEdit, onDelete, onReorder]);
 
   useEffect(() => {
     if (storage.isLoaded) {
@@ -126,6 +150,11 @@ export const ToDoList: React.FC<IToDoListProps> = (props: IToDoListProps): JSX.E
       <IonHeader>
         <IonToolbar>
           <IonTitle>ToDo</IonTitle>
+          <IonButtons slot="end">
+            <IonButton onClick={onAdd}>
+              <IonIcon icon={addCircle} size="large" />
+            </IonButton>
+          </IonButtons>
         </IonToolbar>
       </IonHeader>
       <IonContent>
