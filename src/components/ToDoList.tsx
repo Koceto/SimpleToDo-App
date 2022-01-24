@@ -13,12 +13,12 @@ import {
   IonInput,
   IonLabel,
   IonList,
+  IonModal,
   IonPage,
   IonTitle,
   IonToolbar,
-  useIonAlert,
 } from "@ionic/react";
-import { pencil, addCircle } from "ionicons/icons";
+import { createOutline, addOutline } from "ionicons/icons";
 
 import { IToDoListProps } from "./IToDoListProps";
 import { Renderer } from "../services/Renderer";
@@ -29,6 +29,8 @@ import { ItemReorderEventDetail } from "@ionic/core";
 
 export const ToDoList: React.FC<IToDoListProps> = (props: IToDoListProps): JSX.Element => {
   const alertRef = useRef<HTMLIonAlertElement>();
+  const alertInputRef = useRef<{ ref?: HTMLTextAreaElement; value: "" }>({ value: "" });
+  const listRef = useRef<IListItem[]>([]);
   const [storage, setStorage] = useState<{ storage: Storage | null; isLoaded: boolean }>({ storage: null, isLoaded: false });
   const [mode, setMode] = useState<Modes>(Modes.View);
   const [list, setList] = useState<IListItem[]>([]);
@@ -47,16 +49,6 @@ export const ToDoList: React.FC<IToDoListProps> = (props: IToDoListProps): JSX.E
       }
     },
     [storage]
-  );
-
-  const addItem = useCallback(
-    (val: string | null | undefined) => {
-      if (val) {
-        const newItem: IListItem = { value: val, key: Date.now().toString() };
-        saveToStorage([...list, newItem], true);
-      }
-    },
-    [list, saveToStorage]
   );
 
   const onAdd = useCallback(() => {
@@ -109,6 +101,42 @@ export const ToDoList: React.FC<IToDoListProps> = (props: IToDoListProps): JSX.E
     setMode(mode === Modes.Edit ? Modes.View : Modes.Edit);
   }, [mode, setMode]);
 
+  const setFocus = useCallback(
+    (delay: number = 150) => {
+      if (alertInputRef.current.ref) {
+        setTimeout(() => alertInputRef.current.ref?.focus(), delay);
+      }
+    },
+    [alertInputRef]
+  );
+
+  const clearInput = useCallback(() => {
+    if (alertInputRef.current.ref) {
+      alertInputRef.current.ref.value = "";
+      alertInputRef.current.value = "";
+    }
+  }, [alertInputRef]);
+
+  const addItem = useCallback(
+    (val: string | null | undefined, dismiss: boolean = true, shouldClear: boolean = false, resetFocus: boolean = false): boolean => {
+      if (val) {
+        const newItem: IListItem = { value: val, key: Date.now().toString() };
+        saveToStorage([newItem, ...listRef.current], true);
+      }
+
+      if (shouldClear) {
+        clearInput();
+      }
+
+      if (resetFocus) {
+        setFocus();
+      }
+
+      return dismiss;
+    },
+    [listRef, saveToStorage, clearInput, setFocus]
+  );
+
   const itemsToDisplay = useMemo<JSX.Element | JSX.Element[] | string[]>(() => {
     if (mode === Modes.View) {
       return Renderer.RenderViewItems(list, onEdit);
@@ -130,6 +158,10 @@ export const ToDoList: React.FC<IToDoListProps> = (props: IToDoListProps): JSX.E
   }, [storage]);
 
   useEffect(() => {
+    listRef.current = list;
+  }, [list, listRef]);
+
+  useEffect(() => {
     const store = new Storage();
     store.create().then((val) => setStorage({ storage: val, isLoaded: true }));
 
@@ -138,8 +170,9 @@ export const ToDoList: React.FC<IToDoListProps> = (props: IToDoListProps): JSX.E
         setMode(Modes.View);
       });
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  console.count();
 
   return (
     <IonPage>
@@ -147,8 +180,8 @@ export const ToDoList: React.FC<IToDoListProps> = (props: IToDoListProps): JSX.E
         <IonToolbar>
           <IonTitle>ToDo</IonTitle>
           <IonButtons slot="end">
-            <IonButton onClick={onAdd}>
-              <IonIcon icon={addCircle} size="large" />
+            <IonButton onClick={toggleMode}>
+              <IonIcon icon={createOutline} size="large" />
             </IonButton>
           </IonButtons>
         </IonToolbar>
@@ -156,21 +189,14 @@ export const ToDoList: React.FC<IToDoListProps> = (props: IToDoListProps): JSX.E
       <IonContent>
         <IonList>{itemsToDisplay}</IonList>
       </IonContent>
-      <IonButton color="light" onClick={toggleMode}>
-        <IonIcon icon={pencil} />
-        <IonLabel>{mode === Modes.Edit ? Modes.View : Modes.Edit}</IonLabel>
+      <IonButton color="light" onClick={onAdd}>
+        <IonIcon icon={addOutline} />
+        <IonLabel>Add</IonLabel>
       </IonButton>
       <IonAlert
         ref={(ref: HTMLIonAlertElement) => (alertRef.current = ref)}
         isOpen={alertIsOpen}
-        onDidPresent={() => {
-          setTimeout(() => {
-            const firstInput: any = document.querySelector("ion-alert input");
-            if (firstInput) {
-              firstInput.focus();
-            }
-          }, 150);
-        }}
+        onDidPresent={() => setFocus()}
         onDidDismiss={() => setAlertIsOpen(false)}
         inputs={[
           {
@@ -178,23 +204,31 @@ export const ToDoList: React.FC<IToDoListProps> = (props: IToDoListProps): JSX.E
             type: "text",
             cssClass: ["no-padding-vertical"],
             attributes: {
-              autocapitalize: true,
-              autofocus: true,
               autoCapitalize: true,
+              autocapitalize: true,
               autoFocus: true,
-              onKeyDown: (event) => {
+              autofocus: true,
+              ref: (ref: HTMLTextAreaElement | undefined) => (alertInputRef.current.ref = ref),
+              onKeyUp: (event) => {
+                const target: any = event.target;
+                if (target) {
+                  alertInputRef.current.value = target.value;
+                }
+
                 if (!event.ctrlKey && !event.altKey && !event.shiftKey && event.key === "Enter") {
-                  const target: any = event.target;
-                  if (target) {
-                    addItem(target.value);
-                    alertRef.current?.dismiss();
-                  }
+                  addItem(target.value, false, true, true);
                 }
               },
             },
           },
         ]}
-        buttons={["Cancel", { text: "Add", handler: (values: string[]) => addItem(values[0]) }]}
+        buttons={[
+          "Cancel",
+          {
+            text: "Add",
+            handler: (values: string[]) => addItem(alertInputRef.current.value, false, true, true),
+          },
+        ]}
       />
     </IonPage>
   );
