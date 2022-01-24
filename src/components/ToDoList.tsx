@@ -58,11 +58,11 @@ export const ToDoList: React.FC<IToDoListProps> = (props: IToDoListProps): JSX.E
   const onEdit = useCallback(
     (item: IListItem, newItem?: IListItem) => {
       if (item && newItem) {
-        const index = list.indexOf(item);
+        const index = listRef.current.indexOf(item);
 
         if (index >= 0) {
-          list[index] = { ...newItem };
-          saveToStorage(list, true);
+          listRef.current[index] = { ...newItem };
+          saveToStorage(listRef.current, true);
         } else {
           throw Error("Could not find value to edit!");
         }
@@ -70,7 +70,7 @@ export const ToDoList: React.FC<IToDoListProps> = (props: IToDoListProps): JSX.E
         throw Error("Missing item or new value!");
       }
     },
-    [list, saveToStorage]
+    [listRef, saveToStorage]
   );
 
   const onDelete = useCallback(
@@ -84,17 +84,17 @@ export const ToDoList: React.FC<IToDoListProps> = (props: IToDoListProps): JSX.E
 
   const onReorder = useCallback(
     (detail: ItemReorderEventDetail) => {
-      const items: IListItem[] = list.splice(detail.from, 1);
+      const items: IListItem[] = listRef.current.splice(detail.from, 1);
 
       if (items.length === 1) {
-        list.splice(detail.to, 0, items[0]);
+        listRef.current.splice(detail.to, 0, items[0]);
       } else {
         throw Error("None or many items in reorder!");
       }
-      saveToStorage(list, true);
+      saveToStorage(listRef.current, true);
       detail.complete(true);
     },
-    [list, saveToStorage]
+    [listRef, saveToStorage]
   );
 
   const toggleMode = useCallback(() => {
@@ -139,19 +139,20 @@ export const ToDoList: React.FC<IToDoListProps> = (props: IToDoListProps): JSX.E
 
   const itemsToDisplay = useMemo<JSX.Element | JSX.Element[] | string[]>(() => {
     if (mode === Modes.View) {
-      return Renderer.RenderViewItems(list, onEdit);
+      return Renderer.RenderViewItems(listRef.current, onEdit);
     } else if (mode === Modes.Edit) {
-      return Renderer.RenderEditItems(list, addItem, onEdit, onDelete, onReorder);
+      return Renderer.RenderEditItems(listRef.current, addItem, onEdit, onDelete, onReorder);
     } else {
       return ["Error occurred while rendering!"];
     }
-  }, [mode, list, addItem, onEdit, onDelete, onReorder]);
+  }, [mode, listRef, addItem, onEdit, onDelete, onReorder]);
 
   useEffect(() => {
     if (storage.isLoaded) {
       storage.storage?.get("list-items").then((items: IListItem[]) => {
         if (items) {
-          setList(items.sort(Utility.SortByIsComplete));
+          listRef.current = items.sort(Utility.SortByIsComplete);
+          setList(listRef.current);
         }
       });
     }
@@ -172,7 +173,7 @@ export const ToDoList: React.FC<IToDoListProps> = (props: IToDoListProps): JSX.E
     });
   }, []);
 
-  console.count();
+  console.count("Render")
 
   return (
     <IonPage>

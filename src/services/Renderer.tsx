@@ -4,6 +4,30 @@ import { closeOutline } from "ionicons/icons";
 import { IListItem } from "../interfaces/IListItem";
 
 export class Renderer {
+  private static RenderItem = (item: IListItem, onEdit: (item: IListItem, newItem: IListItem) => void, onDelete: (item: IListItem) => void): JSX.Element => {
+    return (
+      <IonItem key={item.key} style={{ "--highlight-color-focused": "none" }}>
+        <IonReorder />
+        <IonGrid className="ion-no-padding">
+          <IonRow>
+            <IonCol className="vertical-align ion-padding-horizontal">
+              <IonInput
+                value={item.value}
+                onIonChange={(ev: any) => onEdit(item, { ...item, value: ev.target.value })}
+                style={{ cursor: "pointer", textDecoration: item.isComplete ? "line-through" : "none" }}
+              />
+            </IonCol>
+            <IonItem lines="none">
+              <IonCol size="auto" className="vertical-align">
+                <IonIcon icon={closeOutline} size="large" className="ion-color ion-color-danger" onClick={() => onDelete(item)} style={{ cursor: "pointer" }} />
+              </IonCol>
+            </IonItem>
+          </IonRow>
+        </IonGrid>
+      </IonItem>
+    );
+  };
+
   public static RenderViewItems = (items: IListItem[], onClick: (item: IListItem, newItem: IListItem) => void): JSX.Element[] => {
     const elements: JSX.Element[] = [];
 
@@ -28,30 +52,6 @@ export class Renderer {
     }
 
     return elements;
-  };
-
-  private static RenderItem = (item: IListItem, onEdit: (item: IListItem, newItem: IListItem) => void, onDelete: (item: IListItem) => void): JSX.Element => {
-    return (
-      <IonItem key={item.key} style={{ "--highlight-color-focused": "none" }}>
-        <IonReorder />
-        <IonGrid className="ion-no-padding">
-          <IonRow>
-            <IonCol className="vertical-align ion-padding-horizontal">
-              <IonInput
-                value={item.value}
-                onBlur={(ev: any) => onEdit(item, { ...item, value: ev.target.value })}
-                style={{ cursor: "pointer", textDecoration: item.isComplete ? "line-through" : "none" }}
-              />
-            </IonCol>
-            <IonItem lines="none">
-              <IonCol size="auto" className="vertical-align">
-                <IonIcon icon={closeOutline} size="large" className="ion-color ion-color-danger" onClick={() => onDelete(item)} style={{ cursor: "pointer" }} />
-              </IonCol>
-            </IonItem>
-          </IonRow>
-        </IonGrid>
-      </IonItem>
-    );
   };
 
   public static RenderEditItems = (
