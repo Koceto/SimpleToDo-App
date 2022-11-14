@@ -8,6 +8,7 @@ export class Renderer {
     return (
       <IonItem key={item.key} style={{ "--highlight-color-focused": "none" }}>
         <IonReorder />
+
         <IonGrid className="ion-no-padding">
           <IonRow>
             <IonCol className="vertical-align ion-padding-horizontal">
@@ -17,6 +18,7 @@ export class Renderer {
                 style={{ cursor: "pointer", textDecoration: item.isComplete ? "line-through" : "none" }}
               />
             </IonCol>
+
             <IonItem lines="none">
               <IonCol size="auto" className="vertical-align">
                 <IonIcon icon={closeOutline} size="large" className="ion-color ion-color-danger" onClick={() => onDelete(item)} style={{ cursor: "pointer" }} />
